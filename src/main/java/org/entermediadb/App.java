@@ -1,11 +1,24 @@
 package org.entermediadb;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.http.HttpHost;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.core.AcknowledgedResponse;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetMappingsRequest;
+import org.elasticsearch.client.indices.GetMappingsResponse;
+import org.elasticsearch.client.indices.PutMappingRequest;
+import org.elasticsearch.cluster.metadata.MappingMetadata;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -30,9 +43,94 @@ public class App
 	    		 );
 	    		//setMapping(client);
 	    		//loadData(client);
+	    		
+	    		// getMapping(client, "twitter");
+	    		insertDocument(client, "posts", "2");
+	    		getDocument(client);
 	    		client.close();
 		}
 		catch (Throwable ex)
+		{
+			ex.printStackTrace();
+		}
+    }
+    
+    public static void insertDocument(RestHighLevelClient client, String index, String id) {
+    	Map<String, Object> food = new HashMap<>();
+    	food.put("food", "kimchy");
+    	food.put("postDate", new Date());
+    	food.put("description", "Korean food sec");
+    	
+    	Map<String, Object> jsonMap = new HashMap<>();
+    	jsonMap.put("user", "kimchy");
+    	jsonMap.put("postDate", new Date());
+    	jsonMap.put("message", "trying out Elasticsearch2");
+    	jsonMap.put("food", food);
+    	
+    	
+    	
+    	IndexRequest request = new IndexRequest(index).id(id).source(jsonMap);
+    	try {
+    		IndexResponse indexResponse = client.index(request, RequestOptions.DEFAULT);
+    	} catch (Throwable ex) {
+    		ex.printStackTrace();
+    	}
+    }
+    
+    public static void getDocument(RestHighLevelClient client) {
+    	GetRequest getRequest = new GetRequest("posts", "1");;
+    	
+    	try {
+    		GetResponse getResponse = client.get(getRequest, RequestOptions.DEFAULT);
+    		System.out.println(getResponse.toString());
+    	} catch (Throwable ex) {
+    		ex.printStackTrace();
+    	}
+    }
+    
+    
+    public static void getMapping(RestHighLevelClient client, String index) 
+    {
+    	try 
+    	{
+	    	GetMappingsRequest request = new GetMappingsRequest(); 
+	    	request.indices("twitter"); 
+	    	GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
+	    	Map<String, MappingMetadata> allMappings = getMappingResponse.mappings(); 
+	    	MappingMetadata indexMapping = allMappings.get(index); 
+	    	Map<String, Object> mapping = indexMapping.sourceAsMap(); 
+	    	System.out.println(mapping.toString());
+    	} 
+    	catch (Throwable ex) 
+    	{
+    		ex.printStackTrace();
+    	}
+    }
+    
+    
+    
+    public static void setMapping(RestHighLevelClient client) {
+    	PutMappingRequest request = new PutMappingRequest("twitter"); 
+    	
+    	try {
+    	XContentBuilder builder = XContentFactory.jsonBuilder();
+    	builder.startObject();
+    	{
+    	    builder.startObject("properties");
+    	    {
+    	        builder.startObject("message");
+    	        {
+    	            builder.field("type", "text");
+    	        }
+    	        builder.endObject();
+    	    }
+    	    builder.endObject();
+    	}
+    	builder.endObject();
+    	request.source(builder); 
+    	org.elasticsearch.action.support.master.AcknowledgedResponse putMappingResponse = client.indices().putMapping(request, RequestOptions.DEFAULT);
+    	}
+    	catch (Throwable ex)
 		{
 			ex.printStackTrace();
 		}
