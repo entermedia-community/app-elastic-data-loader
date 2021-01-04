@@ -259,6 +259,8 @@ public class App
 
 
 			long count = 0;
+			long missing = 0;
+			
 			try
     		{
     			ZipInputStream unzip = new ZipInputStream(inputfile);
@@ -301,17 +303,18 @@ public class App
 							if( id == null)
 							{
 								info("No ID found " + module + " node:" + node);
+								missing++;
 							}
 							else
 							{
 								req.id(id.asText());
+								br.add(req);
+								count++;
+								if( count % 1000 > 0)
+								{
+									info(" Saved "  + count);
+								}
 							}	
-							br.add(req);
-							count++;
-							if( count % 1000 > 0)
-							{
-								info(" Saved "  + count);
-							}
 						}
 					} else {
 						System.out.println("Error: records should be an array: skipping.");
