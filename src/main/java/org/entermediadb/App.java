@@ -47,7 +47,6 @@ public class App
         	App app = new App();
         	RestHighLevelClient client = app.connect();
         	//app.setMapping
-	    	//app.setMapping(client,"assets_catalog", "asset");
         	//app.createIndex(client,"assets_catalog4", "asset");
 	    	app.loadData(client,"assets_catalog4", "asset");
 	    		
