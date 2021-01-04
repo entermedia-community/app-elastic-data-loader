@@ -248,7 +248,7 @@ public class App
     
     public void loadData(RestHighLevelClient client, String catalogid, String module) throws Exception
     {
-    		FileInputStream inputfile = new FileInputStream(new File( GITHOME + "/data/small.zip") );
+    		FileInputStream inputfile = new FileInputStream(new File( GITHOME + "/data/asset_test.zip") );
 
     		try
     		{
@@ -263,20 +263,20 @@ public class App
     			JsonToken current;
 
     			current = jp.nextToken();
-    			if (current != JsonToken.START_OBJECT)
+    			if (JsonToken.START_OBJECT.equals(current))
     			{
-    				System.out.println("Error: root should be object: quiting.");
+    				System.out.println("Error: root should be object: quiting." + current);
     				return;
     			}
 
-    			while (jp.nextToken() != JsonToken.END_OBJECT) 
+    			while (!JsonToken.END_OBJECT.equals(jp.nextToken() ) ) 
     			{
-    				String fieldName = jp.getCurrentName();
+    				//String fieldName = jp.getCurrentName();
     				// move from field name to field value
     				current = jp.nextToken();
-					if (current == JsonToken.START_ARRAY) {
+					if (JsonToken.START_ARRAY.equals(current)) {
 						// For each of the records in the array
-						while (jp.nextToken() != JsonToken.END_ARRAY) {
+						while (!JsonToken.END_ARRAY.equals(jp.nextToken()) ) {
 							// read the record into a tree model,
 							// this moves the parsing position to the end of it
 							JsonNode node = jp.readValueAsTree();
