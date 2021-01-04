@@ -294,12 +294,13 @@ public class App
 							// this moves the parsing position to the end of it
 							JsonNode node = jp.readValueAsTree();
 							IndexRequest req = Requests.indexRequest(catalogid + "_" + module);
-							String json  = node.toString();
+							JsonNode _source = node.get("_source");
+							String source = _source.toString();
 							//info(json);
 		    		        //client.bulk(br, RequestOptions.DEFAULT);
-							req.source(json, XContentType.JSON);
+							req.source(source, XContentType.JSON);
 							
-							JsonNode id = node.get("id");
+							JsonNode id = node.get("_id");
 							if( id == null)
 							{
 								info("No ID found " + module + " node:" + node);
