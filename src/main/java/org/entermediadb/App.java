@@ -248,7 +248,7 @@ public class App
     
     public void loadData(RestHighLevelClient client, String catalogid, String module) throws Exception
     {
-    		File file = new File( GITHOME + "/data/asset_test.zip");
+    		File file = new File( "/home/mitsuo/Downloads/asset.zip");
     		if( !file.exists() )
     		{
     			throw new Exception("Does not exist");
