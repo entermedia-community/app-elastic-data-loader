@@ -303,7 +303,7 @@ public class App
 							JsonNode id = node.get("_id");
 							if( id == null)
 							{
-								info("No ID found " + module + " node:" + node);
+								info("No ID found " + module + " node:" + missing);
 								missing++;
 							}
 							else
