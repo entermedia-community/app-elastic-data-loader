@@ -26,7 +26,7 @@
 	<classpathentry kind="lib" path="lib/httpcore-4.4.12.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-nio-4.4.12.jar"/>
 	<classpathentry kind="lib" path="lib/transport-7.10.1.jar"/>
-	<classpathentry kind="lib" path="lib/elasticsearch-7.10.1.jar"/>
+	<classpathentry kind="lib" path="lib/elasticsearch-7.10.1.jar" sourcepath="lib/elasticsearch-7.10.1-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
