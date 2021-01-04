@@ -13,6 +13,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -23,7 +24,6 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.client.security.RefreshPolicy;
 import org.elasticsearch.common.xcontent.XContentType;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -248,14 +248,22 @@ public class App
     
     public void loadData(RestHighLevelClient client, String catalogid, String module) throws Exception
     {
-    		FileInputStream inputfile = new FileInputStream(new File( GITHOME + "/data/asset_test.zip") );
+    		File file = new File( GITHOME + "/data/asset_test.zip");
+    		if( !file.exists() )
+    		{
+    			throw new Exception("Does not exist");
+    		}
+    		FileInputStream inputfile = new FileInputStream(file );
 
-    		try
+		    BulkRequest br = new BulkRequest();
+
+
+			long count = 0;
+			try
     		{
     			ZipInputStream unzip = new ZipInputStream(inputfile);
-    			//ZipEntry entry = unzip.getNextEntry();
+    			ZipEntry entry = unzip.getNextEntry();
 
-   		        BulkRequest br = new BulkRequest();
 
     			MappingJsonFactory f = new MappingJsonFactory();
     			JsonParser jp = f.createParser(new InputStreamReader(unzip, "UTF-8"));
@@ -263,15 +271,18 @@ public class App
     			JsonToken current;
 
     			current = jp.nextToken();
-    			if (JsonToken.START_OBJECT.equals(current))
+    			info("Start" + current);
+    			if (!JsonToken.START_OBJECT.equals(current))
     			{
     				System.out.println("Error: root should be object: quiting." + current);
     				return;
     			}
 
-    			while (!JsonToken.END_OBJECT.equals(jp.nextToken() ) ) 
+    			while (!JsonToken.END_OBJECT.equals(jp.nextToken() ) ) // } != here
     			{
-    				//String fieldName = jp.getCurrentName();
+    				String fieldName = jp.getCurrentName();
+    				//info("fieldName:" + fieldName);
+    				
     				// move from field name to field value
     				current = jp.nextToken();
 					if (JsonToken.START_ARRAY.equals(current)) {
@@ -282,8 +293,9 @@ public class App
 							JsonNode node = jp.readValueAsTree();
 							IndexRequest req = Requests.indexRequest(catalogid + "_" + module);
 							String json  = node.toString();
+							//info(json);
 		    		        //client.bulk(br, RequestOptions.DEFAULT);
-							req.source(json);
+							req.source(json, XContentType.JSON);
 							
 							JsonNode id = node.get("id");
 							if( id == null)
@@ -295,6 +307,11 @@ public class App
 								req.id(id.asText());
 							}	
 							br.add(req);
+							count++;
+							if( count % 1000 > 0)
+							{
+								info(" Saved "  + count);
+							}
 						}
 					} else {
 						System.out.println("Error: records should be an array: skipping.");
@@ -308,11 +325,12 @@ public class App
     		}
     		finally
     		{
-
     			inputfile.close();
-    	//	}
+    			BulkResponse bulkResponse = client.bulk(br, RequestOptions.DEFAULT);
+    			info( bulkResponse.status().toString() );
+    		}
+			info(" Complete "  + count);
 
-    	}
 
     }
 
