@@ -36,10 +36,14 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
  *
  */
 public class App {
-	private static final String GITHOME = "/home/shanti/git/app-elastic-data-loader";
+	private static final String GITHOME = "/home/entermedia";
+	private static final String assetsFileName = "/Downloads/assets.zip";
+	private static final String serverIP = "154.127.54.122";
+	private static final int serverPort = 9270;
+	private static final String serverProtocol = "http";
 
 	public static void main(String[] args) {
-		System.out.println("Connecting");
+		System.out.println("App Starting");
 
 		try {
 			App app = new App();
@@ -58,8 +62,9 @@ public class App {
 	}
 
 	private RestHighLevelClient connect() {
+		System.out.println("Connecting to: " + serverProtocol + "://" + serverIP + ":" + serverPort);
 		RestHighLevelClient client = new RestHighLevelClient(
-				RestClient.builder(new HttpHost("154.127.54.122", 9270, "http")
+				RestClient.builder(new HttpHost(serverIP, serverPort, serverProtocol)
 				// , new HttpHost("localhost", 9201, "http"))
 				));
 		return client;
@@ -67,43 +72,45 @@ public class App {
 
 	public void createIndex(RestHighLevelClient client, String catalogid, String module) throws Exception {
 		CreateIndexRequest request = new CreateIndexRequest(catalogid + "_" + module);
-//			File file = new File(GITHOME + "/data/elasticindex.yaml");
-//			FileInputStream stream = new FileInputStream(file);
-//			StreamInput input = new InputStreamStreamInput(stream);
-//			request.settings(Settings.readSettingsFromStream(input) 				);
+		// File file = new File(GITHOME + "/data/elasticindex.yaml");
+		// FileInputStream stream = new FileInputStream(file);
+		// StreamInput input = new InputStreamStreamInput(stream);
+		// request.settings(Settings.readSettingsFromStream(input) );
 		String settings = readfile("/home/shanti/git/app-elastic-data-loader/data/elasticindex.yaml");
 		request.settings(settings, XContentType.YAML);
 		// stream.close();
 		// Builder settingsBuilder = Settings.builder().loadFromStream(yaml.getName(),
 		// in);
-//
-//				for (Iterator iterator = getLocalNode().getProperties().keySet().iterator(); iterator.hasNext();)
-//				{
-//					String key = (String) iterator.next();
-//					if (key.startsWith("index.")) //Legacy
-//					{
-//						String val = getLocalNode().getSetting(key);
-//						settingsBuilder.put(key, val);
-//					}
-//				}
-//
-//				CreateIndexResponse newindexres = admin.indices().prepareCreate(index).setSettings(settingsBuilder).execute().actionGet();
+		//
+		// for (Iterator iterator = getLocalNode().getProperties().keySet().iterator();
+		// iterator.hasNext();)
+		// {
+		// String key = (String) iterator.next();
+		// if (key.startsWith("index.")) //Legacy
+		// {
+		// String val = getLocalNode().getSetting(key);
+		// settingsBuilder.put(key, val);
+		// }
+		// }
+		//
+		// CreateIndexResponse newindexres =
+		// admin.indices().prepareCreate(index).setSettings(settingsBuilder).execute().actionGet();
 
-//    			XContentBuilder builder = XContentFactory.jsonBuilder();
-//    			builder.startObject();
-//    			{
-//    			    builder.startObject("properties");
-//    			    {
-//    			        builder.startObject("message");
-//    			        {
-//    			            builder.field("type", "text");
-//    			        }
-//    			        builder.endObject();
-//    			    }
-//    			    builder.endObject();
-//    			}
-//    			builder.endObject();
-//    			request.mapping(builder);
+		// XContentBuilder builder = XContentFactory.jsonBuilder();
+		// builder.startObject();
+		// {
+		// builder.startObject("properties");
+		// {
+		// builder.startObject("message");
+		// {
+		// builder.field("type", "text");
+		// }
+		// builder.endObject();
+		// }
+		// builder.endObject();
+		// }
+		// builder.endObject();
+		// request.mapping(builder);
 
 		String mapping = readfile("/home/shanti/git/app-elastic-data-loader/data/" + module + "-mapping2.json");
 		request.mapping(mapping, XContentType.JSON);
@@ -220,7 +227,8 @@ public class App {
 	 */
 
 	public void loadData(RestHighLevelClient client, String catalogid, String module) throws Exception {
-		File file = new File("/home/mitsuo/Downloads/asset_alfred.zip");
+		File file = new File(GITHOME + "/" + assetsFileName);
+		System.out.println("loading file:" + GITHOME + "/" + assetsFileName);
 		if (!file.exists()) {
 			throw new Exception("Does not exist");
 		}
@@ -288,13 +296,13 @@ public class App {
 					jp.skipChildren();
 				}
 			}
-//				} else {
-//					System.out.println("Unprocessed property: " + fieldName);
-//					jp.skipChildren();
-//				}
+			// } else {
+			// System.out.println("Unprocessed property: " + fieldName);
+			// jp.skipChildren();
+			// }
 		} finally {
 			inputfile.close();
-			BulkResponse bulkResponse = client.bulk(br, RequestOptions.DEFAULT);			
+			BulkResponse bulkResponse = client.bulk(br, RequestOptions.DEFAULT);
 			info(bulkResponse.status().toString());
 		}
 		info(" Complete " + count);
