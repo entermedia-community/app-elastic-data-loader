@@ -36,11 +36,14 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
  *
  */
 public class App {
-	private static final String GITHOME = "/home/entermedia";
-	private static final String assetsFileName = "/Downloads/assets.zip";
-	private static final String serverIP = "154.127.54.122";
-	private static final int serverPort = 9270;
+	private static final String gitHome = "/home/mitsuo/dev";
+	private static final String assetsFileName = "/Downloads/alfred.zip";
+	private static final String serverIP = "localhost";
+	private static final int serverPort = 9200;
 	private static final String serverProtocol = "http";
+
+	private static final String esCatalogName = "assets_catalog";
+	private static final String esModule = "asset";
 
 	public static void main(String[] args) {
 		System.out.println("App Starting");
@@ -49,8 +52,8 @@ public class App {
 			App app = new App();
 			RestHighLevelClient client = app.connect();
 			// app.setMapping
-			// app.createIndex(client,"assets_catalog4", "asset");
-			app.loadData(client, "assets_catalog4", "asset");
+			app.createIndex(client, esCatalogName, esModule);
+			// app.loadData(client, destCatalogName, srcCatalogName);
 
 			// getMapping(client, "twitter");
 			// insertDocument(client, "posts", "2");
@@ -71,12 +74,13 @@ public class App {
 	}
 
 	public void createIndex(RestHighLevelClient client, String catalogid, String module) throws Exception {
+		System.out.println("Creating Index: "+ catalogid + "_" + module);
 		CreateIndexRequest request = new CreateIndexRequest(catalogid + "_" + module);
 		// File file = new File(GITHOME + "/data/elasticindex.yaml");
 		// FileInputStream stream = new FileInputStream(file);
 		// StreamInput input = new InputStreamStreamInput(stream);
 		// request.settings(Settings.readSettingsFromStream(input) );
-		String settings = readfile("/home/shanti/git/app-elastic-data-loader/data/elasticindex.yaml");
+		String settings = readfile(gitHome + "/app-elastic-data-loader/data/elasticindex.yaml");
 		request.settings(settings, XContentType.YAML);
 		// stream.close();
 		// Builder settingsBuilder = Settings.builder().loadFromStream(yaml.getName(),
@@ -112,7 +116,7 @@ public class App {
 		// builder.endObject();
 		// request.mapping(builder);
 
-		String mapping = readfile("/home/shanti/git/app-elastic-data-loader/data/" + module + "-mapping2.json");
+		String mapping = readfile(gitHome + "/app-elastic-data-loader/data/" + module + "-mapping2.json");
 		request.mapping(mapping, XContentType.JSON);
 
 		// request.alias(new
@@ -227,8 +231,8 @@ public class App {
 	 */
 
 	public void loadData(RestHighLevelClient client, String catalogid, String module) throws Exception {
-		File file = new File(GITHOME + "/" + assetsFileName);
-		System.out.println("loading file:" + GITHOME + "/" + assetsFileName);
+		File file = new File(gitHome + "/" + assetsFileName);
+		System.out.println("loading file:" + gitHome + "/" + assetsFileName);
 		if (!file.exists()) {
 			throw new Exception("Does not exist");
 		}
